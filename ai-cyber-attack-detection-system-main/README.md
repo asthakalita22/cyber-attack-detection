@@ -18,7 +18,7 @@ A simple web-based system that detects cyber attacks using Machine Learning and 
 
 1. Clone the repository  
 
-git clone https://github.com/arjun23BCE0112/ai-cyber-attack-detection-system.git  
+git clone https://github.com/asthakalita22/ai-cyber-attack-detection.git  
 cd ai-cyber-attack-detection-system  
 
 2. Install dependencies  
