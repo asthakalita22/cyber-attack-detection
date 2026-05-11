@@ -1,0 +1,63 @@
+<<<<<<< HEAD
+__pycache__/
+*.pyc
+venv/
+env/
+.venv/
+.vscode/
+.idea/
+.env
+.DS_Store
+Thumbs.db
+*.log
+=======
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+
+# IDE / Editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Model files (remove this line if you want to upload models)
+saved_models/
+>>>>>>> 802f4e9413c9047e206241bc6fe5366057470051
+desktop.ini

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyber Attack Detection System</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef1f5;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a2332 0%, #0f6e56 100%);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .header-icon {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    header h2 { color: #fff; font-size: 20px; margin: 0; }
+    header p { color: rgba(255,255,255,0.65); font-size: 13px; margin-top: 2px; }
+
+    .status-pill {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.1);
+      padding: 5px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #5DCAA5;
+      box-shadow: 0 0 0 3px rgba(93,202,165,0.3);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(93,202,165,0.3); }
+      50%       { box-shadow: 0 0 0 5px rgba(93,202,165,0.1); }
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      padding: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 12px 18px;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+      font-weight: 700;
+      color: #34495e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: #fafbfc;
+    }
+
+    .card-body { padding: 18px; }
+
+    .left { width: 300px; flex-shrink: 0; }
+
+    .field { margin-bottom: 11px; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      padding: 7px 9px;
+      border: 1px solid #dce1e7;
+      border-radius: 5px;
+      font-size: 13px;
+      background: #fff;
+      color: #2c3e50;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: #0f6e56;
+      box-shadow: 0 0 0 2px rgba(15,110,86,0.12);
+    }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .detect-btn {
+      width: 100%;
+      margin-top: 16px;
+      padding: 10px;
+      background: #0f6e56;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .detect-btn:hover { background: #085041; }
+    .detect-btn:active { transform: scale(0.98); }
+    .detect-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    .right { flex: 1; }
+
+    .result-box {
+      border: 1px solid #e0e6ed;
+      border-radius: 8px;
+      padding: 16px 18px;
+      background: #f8fafc;
+      min-height: 88px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .result-idle { color: #aab; font-size: 13px; }
+    .result-inner { display: flex; gap: 14px; align-items: flex-start; width: 100%; }
+
+    .result-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .icon-safe   { background: #d5f5e3; }
+    .icon-attack { background: #fce8e8; }
+
+    .result-label { font-size: 15px; font-weight: 700; }
+    .safe   { color: #1e8449; }
+    .attack { color: #c0392b; }
+
+    .result-meta { font-size: 12px; color: #777; margin-top: 3px; }
+
+    .prob-bar-wrap {
+      margin-top: 9px;
+      height: 5px;
+      width: 180px;
+      background: #e0e6ed;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .prob-bar { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+    .prob-label { font-size: 12px; color: #888; margin-top: 4px; }
+
+    .alerts-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .alerts-header span {
+      font-size: 13px; font-weight: 700;
+      color: #34495e; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    .clear-btn {
+      font-size: 11px; color: #999; background: none;
+      border: 1px solid #dce1e7; border-radius: 4px;
+      padding: 3px 8px; cursor: pointer;
+    }
+
+    .clear-btn:hover { color: #c0392b; border-color: #c0392b; }
+
+    .alerts-wrap {
+      border: 1px solid #e0e6ed;
+      border-radius: 8px;
+      overflow: hidden;
+      max-height: 340px;
+      overflow-y: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+    thead th {
+      background: #f0f3f7;
+      padding: 9px 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid #e0e6ed;
+      position: sticky; top: 0; z-index: 1;
+    }
+
+    tbody td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f0f3f7;
+      color: #2c3e50;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr.row-attack { background: #fff8f8; }
+    tbody tr.row-normal { opacity: 0.5; }
+    tbody tr.row-normal:hover { opacity: 0.8; }
+    tbody tr.row-attack:hover { background: #fff0f0; }
+
+    .ip-cell { font-family: monospace; font-size: 11px; color: #555; }
+    .time-cell { color: #aaa; font-size: 11px; white-space: nowrap; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-none     { background: #f0f3f7; color: #aaa; }
+    .badge-low      { background: #d5f5e3; color: #1a6b3a; }
+    .badge-medium   { background: #fef9e7; color: #7d6608; border: 1px solid #f9ca24; }
+    .badge-high     { background: #fce8e8; color: #922b21; }
+    .badge-critical { background: #922b21; color: #fff; }
+
+    .no-alerts { text-align: center; padding: 28px; color: #bbb; font-size: 13px; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-icon">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+      <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z" fill="rgba(255,255,255,0.9)"/>
+    </svg>
+  </div>
+  <div>
+    <h2>AI Cyber Attack Detection System</h2>
+    <p>Real-time intrusion detection using Machine Learning</p>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    System online
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- LEFT: Input -->
+  <div class="card left">
+    <div class="card-header">Network Parameters</div>
+    <div class="card-body">
+
+      <div class="field">
+        <label>Source IP</label>
+        <input id="src_ip" value="192.168.1.10">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Protocol</label>
+          <select id="protocol_type">
+            <option value="tcp">TCP</option>
+            <option value="udp">UDP</option>
+            <option value="icmp">ICMP</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Service</label>
+          <select id="service">
+            <option value="http">HTTP</option>
+            <option value="ftp">FTP</option>
+            <option value="ssh">SSH</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Flag</label>
+          <select id="flag">
+            <option value="SF">SF</option>
+            <option value="S0">S0</option>
+            <option value="REJ">REJ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Duration (s)</label>
+          <input type="number" id="duration" value="2">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Src bytes</label>
+          <input type="number" id="src_bytes" value="200">
+        </div>
+        <div class="field">
+          <label>Dst bytes</label>
+          <input type="number" id="dst_bytes" value="5000">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Failed logins</label>
+          <input type="number" id="num_failed_logins" value="0">
+        </div>
+        <div class="field">
+          <label>Conn count</label>
+          <input type="number" id="count" value="1">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Error rate</label>
+          <input type="number" step="0.1" id="serror_rate" value="0.0">
+        </div>
+        <div class="field">
+          <label>Root shell</label>
+          <input type="number" id="root_shell" value="0" min="0" max="1">
+        </div>
+      </div>
+
+      <button class="detect-btn" id="detectBtn" onclick="detect()">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8" stroke="white" stroke-width="2"/>
+          <path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Analyze Traffic
+      </button>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: Output -->
+  <div class="card right">
+    <div class="card-header">Detection Result</div>
+    <div class="card-body">
+
+      <div class="result-box" id="result">
+        <div class="result-idle">Submit network parameters to run analysis.</div>
+      </div>
+
+      <div class="alerts-header">
+        <span>Live Alerts</span>
+        <button class="clear-btn" onclick="clearAlerts()">Clear</button>
+      </div>
+
+      <div class="alerts-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Source IP</th>
+              <th>Attack Type</th>
+              <th>Severity</th>
+              <th>Probability</th>
+            </tr>
+          </thead>
+          <tbody id="alerts">
+            <tr><td colspan="5" class="no-alerts">Waiting for live traffic…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let firstAlert = true;
+  let lastSeen   = 0;
+
+  // ── Poll every 2 s ──────────────────────────────────────────────────────────
+  async function pollLiveAlerts() {
+    try {
+      const res  = await fetch('/api/live_alerts?after=' + lastSeen);
+      const data = await res.json();
+      if (data.alerts && data.alerts.length > 0) {
+        lastSeen = data.total;
+        // Render newest-first but keep arrival order within this batch
+        data.alerts.slice().reverse().forEach(appendAlert);
+      }
+    } catch (e) { /* ignore network blips */ }
+  }
+
+  setInterval(pollLiveAlerts, 2000);
+  pollLiveAlerts(); // immediate first call
+
+  // ── Append one row to the table ─────────────────────────────────────────────
+  function appendAlert(alert) {
+    const tbody = document.getElementById('alerts');
+    if (firstAlert) { tbody.innerHTML = ''; firstAlert = false; }
+
+    const prob     = (alert.probability * 100).toFixed(1);
+    const ts       = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const isAttack = alert.is_attack;
+    const rowClass = isAttack ? 'row-attack' : 'row-normal';
+
+    const typeCell = isAttack
+      ? '<strong>' + alert.attack_type + '</strong>'
+      : '<span style="color:#999">' + alert.attack_type + '</span>';
+
+    const sevCell = isAttack
+      ? '<span class="badge ' + getBadgeClass(alert.severity) + '">' + alert.severity + '</span>'
+      : '<span class="badge badge-none">Normal</span>';
+
+    tbody.insertAdjacentHTML('afterbegin',
+      '<tr class="' + rowClass + '">' +
+        '<td class="time-cell">' + ts + '</td>' +
+        '<td class="ip-cell">' + alert.src_ip + '</td>' +
+        '<td>' + typeCell + '</td>' +
+        '<td>' + sevCell + '</td>' +
+        '<td>' + prob + '%</td>' +
+      '</tr>'
+    );
+
+    // Keep table lean — max 60 visible rows
+    const rows = tbody.querySelectorAll('tr');
+    if (rows.length > 60) rows[rows.length - 1].remove();
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  function getBadgeClass(severity) {
+    const s = (severity || '').toLowerCase();
+    if (s === 'critical') return 'badge-critical';
+    if (s === 'high')     return 'badge-high';
+    if (s === 'medium')   return 'badge-medium';
+    if (s === 'low')      return 'badge-low';
+    return 'badge-none';
+  }
+
+  function getBarColor(severity) {
+    const s = (severity || '').toLowerCase();
+    if (s === 'critical') return '#c0392b';
+    if (s === 'high')     return '#e67e22';
+    if (s === 'medium')   return '#f1c40f';
+    return '#27ae60';
+  }
+
+  function clearAlerts() {
+    firstAlert = true;
+    lastSeen   = 0;
+    document.getElementById('alerts').innerHTML =
+      '<tr><td colspan="5" class="no-alerts">Waiting for live traffic…</td></tr>';
+  }
+
+  // ── Manual detect ────────────────────────────────────────────────────────────
+  async function detect() {
+    const btn = document.getElementById('detectBtn');
+    const box = document.getElementById('result');
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Analyzing…';
+    box.innerHTML = '<div class="result-idle">Analyzing traffic…</div>';
+
+    const data = {
+      src_ip:            document.getElementById('src_ip').value,
+      protocol_type:     document.getElementById('protocol_type').value,
+      service:           document.getElementById('service').value,
+      flag:              document.getElementById('flag').value,
+      duration:          document.getElementById('duration').value,
+      src_bytes:         document.getElementById('src_bytes').value,
+      dst_bytes:         document.getElementById('dst_bytes').value,
+      num_failed_logins: document.getElementById('num_failed_logins').value,
+      count:             document.getElementById('count').value,
+      serror_rate:       document.getElementById('serror_rate').value,
+      root_shell:        document.getElementById('root_shell').value
+    };
+
+    try {
+      const res    = await fetch('/api/detect', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(data)
+      });
+      const result = await res.json();
+      renderResult(result);
+    } catch (e) {
+      box.innerHTML = '<div class="result-idle" style="color:#c0392b;">API unavailable — check backend connection.</div>';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML =
+      '<svg width="15" height="15" fill="none" viewBox="0 0 24 24">' +
+        '<circle cx="11" cy="11" r="8" stroke="white" stroke-width="2"/>' +
+        '<path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round"/>' +
+      '</svg> Analyze Traffic';
+  }
+
+  function renderResult(result) {
+    const box  = document.getElementById('result');
+    const prob = (result.probability * 100).toFixed(1);
+
+    if (result.is_attack) {
+      const barColor = getBarColor(result.severity);
+      box.innerHTML =
+        '<div class="result-inner">' +
+          '<div class="result-icon icon-attack">' +
+            '<svg width="20" height="20" fill="none" viewBox="0 0 24 24">' +
+              '<path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"' +
+              ' stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>' +
+          '</div>' +
+          '<div style="flex:1">' +
+            '<div class="result-label attack">Attack Detected</div>' +
+            '<div class="result-meta">Type: <strong>' + result.attack_type + '</strong> &nbsp;·&nbsp; Severity: <strong>' + result.severity + '</strong></div>' +
+            '<div class="prob-bar-wrap"><div class="prob-bar" style="width:' + prob + '%;background:' + barColor + '"></div></div>' +
+            '<div class="prob-label">' + prob + '% confidence</div>' +
+          '</div>' +
+        '</div>';
+    } else {
+      box.innerHTML =
+        '<div class="result-inner">' +
+          '<div class="result-icon icon-safe">' +
+            '<svg width="20" height="20" fill="none" viewBox="0 0 24 24">' +
+              '<path d="M20 6L9 17l-5-5" stroke="#1e8449" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>' +
+          '</div>' +
+          '<div style="flex:1">' +
+            '<div class="result-label safe">Normal Traffic</div>' +
+            '<div class="result-meta">No threat detected</div>' +
+            '<div class="prob-bar-wrap"><div class="prob-bar" style="width:' + (100 - parseFloat(prob)) + '%;background:#27ae60"></div></div>' +
+            '<div class="prob-label">' + prob + '% safe confidence</div>' +
+          '</div>' +
+        '</div>';
+    }
+  }
+</script>
+
+</body>
+</html>
